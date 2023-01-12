@@ -12,8 +12,16 @@
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "homepage": "https://github.com/beerush-id/reactor-react",
   "license": "MIT",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "typings": "lib/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/esm/index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.cjs"
+    }
+  },
   "directories": {
     "lib": "lib",
     "test": "test"
@@ -26,16 +34,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beerush-id/reactor-react.git"
+    "url": "git+https://github.com/beerush-id/reactor.git"
   },
   "scripts": {
-    "dev": "npm run clean && tsc --watch",
-    "build": "npm run clean && tsc",
+    "dev": "npm run clean && tsc -p tsconfig.json --watch",
+    "build": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "clean": "rimraf ./lib",
     "prepublish": "npm run build"
   },
   "bugs": {
-    "url": "https://github.com/beerush-id/reactor-react/issues"
+    "url": "https://github.com/beerush-id/reactor/issues"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",
