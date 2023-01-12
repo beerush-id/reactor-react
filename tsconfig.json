@@ -3,7 +3,7 @@
     "outDir": "./lib",
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
+    "module": "umd",
     "moduleResolution": "node",
     "declaration": true,
     "sourceMap": false,
