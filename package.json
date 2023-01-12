@@ -1,6 +1,6 @@
 {
   "name": "@beerush/reactor-react",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Reactive Object for React",
   "keywords": [
     "reactive",
