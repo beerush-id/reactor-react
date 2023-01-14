@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beerush-id/reactor.git"
+    "url": "git+https://github.com/beerush-id/reactor-react.git"
   },
   "scripts": {
     "dev": "npm run clean && tsc -p tsconfig.json --watch",
@@ -43,7 +43,7 @@
     "prepublish": "npm run build"
   },
   "bugs": {
-    "url": "https://github.com/beerush-id/reactor/issues"
+    "url": "https://github.com/beerush-id/reactor-react/issues"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",
