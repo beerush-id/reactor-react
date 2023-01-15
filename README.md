@@ -3,6 +3,20 @@
 Reactor for React is a Javascript Proxy helper to transform any object/array into
 a reactive state that trigger state change whenever the value is changed.
 
+## Getting Started
+
+- [Reactive](#reactive)
+- [Global State](#global-state)
+    - [Readable](#readable)
+    - [Resistant](#writable)
+- [Persistent State](#persistent-state)
+    - [Writable](#writable)
+    - [Persistent](#persistent)
+- [Subscription](#subscription)
+    - [Subscription Handler](#subscription-handler)
+
+> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor-react/tree/main/changelog.md).
+
 With Reactor, we can simply assign value to the state without calling the hook. So, instead
 doing `todo.done = true; setState([ ...todos ])`, we can simply do `todo.done = true` and the
 component will be updated. With recursive enabled, doing `user.todos[0].done = true` also possible!
@@ -291,6 +305,9 @@ then trigger a React hook when the state changed.
 >
 > When upgrading the store version, the states will be reset to the initial states.
 
+## Subscription
+
+A subscription will allow as to listen for the state changes and do whatever we want with the chanages.
 
 **`.subscribe(handler: Function, init = true, actions?: Action[]): () => Unsubscribe`**
 
@@ -336,7 +353,7 @@ obj.subscribe(() => {
 
 ```
 
-#### Subscription Handler
+### Subscription Handler
 
 **`(self: object | object[], prop: string, value: unknown, action: Action, path: string) => void`**
 
@@ -349,12 +366,74 @@ A function to handle the data changes notification.
 - **`path`** - The full path of the changed object (e.g, `children.0.name`).
 
 **Example**
+
 ```js
 obj.subscribe((o, prop, value, action) => {
   console.log(`Object changes: ${action} ${prop} with ${value}`);
 });
 
 ```
+
+## Reactive Fetch
+
+Reactive Fetch will allow us to convert the native `fetch()` result into a reactive request.
+
+**`fetch(url: string, init: object | object[], options?: Partial<ReactiveRequeset>): ReactiveResponse;`**
+
+- `url` - The request URL.
+- `init` - Initial state to be used while the request is not completed.
+- `options` - A native `fetch()` options with additional `cachePeriod: number` and `recursive: boolean = true`.
+
+The returned object is a reactive object with additional properties:
+
+- `__status` - The response status code. The value is `0` before getting any response.
+- `__statusText` - The response status text.
+- `__error` - Error object when the request failed.
+- `__request` - The request options object.
+- `__response` - The response object.
+- `__finishedAt` - Date of when the request is finished.
+- `__refrehs()` - A function to manually refresh the data.
+
+> Adding `cache: 'reload'` to the request options will refresh the data (re-request) while keep displaying the current
+> data, everytime the component is rendered for the first time (e.g, navigate out and navigate in).
+>
+> Adding `cachePeriod: number` to the request options will refresh the data (re-request) when the cache is expired,
+> while keep displaying the current data, everytime the component is rendered for the first time (e.g, navigate out and
+> navigate in).
+>
+> When refreshing the data, the `__status`, `__statusText`, and `__error` property will be reset.
+
+**Example**
+
+```tsx
+import { fetch } from '@beerush/reactor-react';
+
+type Todo = {
+  id: number;
+  name: string;
+  done: boolean;
+}
+
+export default () => {
+  const todos = fetch('/todos', [], { cache: 'reload' });
+
+  return todos.__finishedAt ?
+         (
+           <>
+             { !todos.__status ? <span>Refreshing todos...</span> : '' }
+             <TodoList todos={ todos }/>
+           </>
+         ) :
+         (
+           <p>Loading todos...</p>
+         );
+}
+
+```
+
+From the sample above, we're telling the `fetch()` function to always refresh the data everytime the component is
+rendered for the first time. When refreshing the data, the `<TodoList>` won't be removed because there is data to be
+displayed, and simply showing `Refreshing todos...` to tell user that we're updating the todo list from the API.
 
 ## Optimization
 

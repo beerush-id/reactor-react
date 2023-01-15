@@ -1,6 +1,7 @@
 import {
   Action,
   ARRAY_MUTATIONS,
+  fetch as load,
   forget,
   OBJECT_MUTATIONS,
   PersistentStore,
@@ -8,6 +9,8 @@ import {
   type ReactAble,
   type Reactive,
   reactive as react,
+  ReactiveRequest,
+  ReactiveResponse,
   ReactiveStore,
   type Reactivities,
   Subscribe,
@@ -15,10 +18,53 @@ import {
   Unsubscribe,
   upgrade
 } from '@beerush/reactor';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const reactStore = ReactiveStore;
 const persistStore = PersistentStore;
+
+export function fetch<T extends ReactAble, R extends boolean = true>(
+  url: string,
+  init: T,
+  options?: Partial<ReactiveRequest>
+): ReactiveResponse<T, R> {
+  const loaded = useRef(false);
+  const { cache, cachePeriod } = options || {};
+
+  if (typeof options === 'object') {
+    delete (options as any).cache;
+    delete (options as any).cachePeriod;
+  }
+
+  const state = load(url, init, options);
+  const [ , setState ] = useState(state);
+
+  useEffect(() => {
+    return state.subscribe((o, prop) => {
+      if ([ '__status', '__finishedAt' ].includes(prop as never)) {
+        loaded.current = true;
+        setState(Array.isArray(state) ? [ ...state ] : { ...state as any });
+      }
+    }, false);
+  });
+
+  if (!loaded.current && state.__finishedAt) {
+    if (cache === 'reload') {
+      state.__refresh();
+    } else if (cachePeriod) {
+      const period = state.__finishedAt.getTime() + (cachePeriod || 6000);
+      const now = new Date().getTime();
+
+      if (now >= period) {
+        state.__refresh();
+      }
+    }
+  }
+
+  return state;
+}
+
+fetch.ref = load;
 
 export function reactive<T extends ReactAble, R extends boolean = false>(
   object: T,
@@ -42,6 +88,8 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
     return reacted as Reactivities<T>;
   }
 }
+
+reactive.ref = react;
 
 export function readable<T extends ReactAble, R extends boolean = true>(
   name: string,
@@ -126,6 +174,9 @@ function createHook<T>(object: Reactive<T>, actions?: Action[]): Reactivities<T>
 }
 
 export {
+  ARRAY_MUTATIONS,
+  OBJECT_MUTATIONS,
+  Action,
   Reactive,
   Reactivities,
   ReactAble,
@@ -137,8 +188,9 @@ export {
   upgrade,
   forget,
   purge,
-  OBJECT_MUTATIONS,
-  ARRAY_MUTATIONS,
+  react as reactable,
+  ReactiveRequest,
+  ReactiveResponse
 };
 
 export * from './writable';
