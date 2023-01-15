@@ -14,8 +14,11 @@ a reactive state that trigger state change whenever the value is changed.
     - [Persistent](#persistent)
 - [Subscription](#subscription)
     - [Subscription Handler](#subscription-handler)
+- [Reactive Fetch](#reactive-fetch)
+- [Optimization](#optimization)
 
-> For a summary of the most recent changes, please see [changelog.md](https://github.com/beerush-id/reactor-react/tree/main/changelog.md).
+> For a summary of the most recent changes, please
+> see [changelog.md](https://github.com/beerush-id/reactor-react/tree/main/changelog.md).
 
 With Reactor, we can simply assign value to the state without calling the hook. So, instead
 doing `todo.done = true; setState([ ...todos ])`, we can simply do `todo.done = true` and the
