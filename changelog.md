@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0
+
+- New `subscribe()` function to simply subscribe to a reactive object/array to create a React hook.
+
 ## v0.3.0
 
 - New `fetch()` function that turns native `fetch()` into a reactive request and automatically trigger React hook.

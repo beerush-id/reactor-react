@@ -66,6 +66,14 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
 
 fetch.ref = load;
 
+export function subscribe<T extends ReactAble>(state: Reactive<T>, events?: Action[]) {
+  if ('subscribe' in state) {
+    return createHook(state, events);
+  } else {
+    throw new Error('State must be a Reactive Object/Array!');
+  }
+}
+
 export function reactive<T extends ReactAble, R extends boolean = false>(
   object: T,
   recursive?: boolean,

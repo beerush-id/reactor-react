@@ -6,6 +6,7 @@ a reactive state that trigger state change whenever the value is changed.
 ## Getting Started
 
 - [Reactive](#reactive)
+- [Subscribe](#subscribe)
 - [Global State](#global-state)
     - [Readable](#readable)
     - [Resistant](#writable)
@@ -132,6 +133,37 @@ const Auth = () => {
 };
 ```
 
+## Subscribe
+
+Subscribe function will allow us to subscribe to a reactive object/array and then trigger React hook when the state
+changed.
+
+**`subscribe(state: Reactive, events?: string[]): Reactive`**
+
+- `state` - A Reactive object to be subscribed.
+- `events` - A list of an action name to listen to. E.g, `['push', 'set']`.
+
+Unlike `reactive()`, the `subscribe()` function doesn't take a `recursive` option and the given `state` must be already
+a `Reactive` object. This function simply a shortcut to subscribe and create a React hook.
+
+**Example**
+
+```tsx
+import { OBJECT_MUTATIONS, subscribe } from '@beerush/reactor-react';
+
+export const TodoItem: React.FC<{ todo: Reactive<Todo> }> = ({ todo }) => {
+  subscribe(todo, OBJECT_MUTATIONS);
+
+  return (<>...</>);
+};
+```
+
+From the sample above, we're only subscribe from `OBJECT_MUTATIONS` actions. So the component will re-rendered only
+when `set` and `delete` property event occurs.
+
+> `subscribe()` function useful if you want to create a recursive reactive object at the top level component, and subscribe to it
+> at the child component level, so you don't have to re-create the reactive object but simply subscribe to it.
+
 ## Global State
 
 Global State will allow us to share data across the app, anywhere. Global state will available until the browser reload,
@@ -155,7 +187,7 @@ component when data changed, we need convert it to a reactive state using `react
 **Example**
 
 ```tsx
-import { reactive, readable } from '@beerush/reactor-react';
+import { ARRAY_MUTATIONS, readable, subscribe } from '@beerush/reactor-react';
 
 // index.tsx
 export default () => {
@@ -167,7 +199,7 @@ export default () => {
 
 // todo-form.tsx
 export const TodoForm = ({ todos }) => {
-  reactive(todos);
+  subscribe(todos);
 
   const add = () => {
     todos.push({ id: 10, name: 'New Todo' });
@@ -178,7 +210,7 @@ export const TodoForm = ({ todos }) => {
 
 // todo-list.tsx
 export const TodoList = ({ todos }) => {
-  reactive(todos);
+  subscribe(todos);
 
   return (
     <ul>...</ul>
@@ -271,20 +303,14 @@ Like `readable()`, we still need to convert it to reactive state at the componen
 **Example**
 
 ```tsx
-import { reactive, writable, Writable } from '@beerush/reactor-react';
-import { useEffect, useState } from 'react';
+import { ARRAY_MUTATIONS, subscribe, writable, Writable } from '@beerush/reactor-react';
 
 const todos = writable('todo-list', []);
 
 const TodoList = () => {
-  const [ show, setShow ] = useState(false);
-  const items = reactive(todos);
+  subscribe(todos, ARRAY_MUTATIONS);
 
-  useEffect(() => setShow());
-
-  return (
-    <Writable>...</Writable>
-  );
+  return (<Writable>...</Writable>);
 };
 ```
 
@@ -487,14 +513,12 @@ export default () => {
 
 ```tsx
 // todo-list.tsx
-import { reactive } from '@beerush/reactor-react';
+import { ARRAY_MUTATIONS, subscribe } from '@beerush/reactor-react';
 
 export const TodoList = ({ todos }) => {
-  reactive(todos);
+  subscribe(todos, ARRAY_MUTATIONS);
 
-  return (
-    <>...</>
-  );
+  return (<>...</>);
 };
 
 ```
