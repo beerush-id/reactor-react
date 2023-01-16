@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0
+
+- Allow to listen to specific property changes. E.g, `subscribe(todo, ['set'], ['name', 'done'])`.
+
 ## v0.4.0
 
 - New `subscribe()` function to simply subscribe to a reactive object/array to create a React hook.

@@ -138,10 +138,11 @@ const Auth = () => {
 Subscribe function will allow us to subscribe to a reactive object/array and then trigger React hook when the state
 changed.
 
-**`subscribe(state: Reactive, events?: string[]): Reactive`**
+**`subscribe(state: Reactive, actions?: string[], props?: string[]): Reactive`**
 
 - `state` - A Reactive object to be subscribed.
-- `events` - A list of an action name to listen to. E.g, `['push', 'set']`.
+- `actions` - A list of an action name to listen to. E.g, `['push', 'set']`.
+- `props` - A list of a property name to listen to. E.g, `['name', 'email']`.
 
 Unlike `reactive()`, the `subscribe()` function doesn't take a `recursive` option and the given `state` must be already
 a `Reactive` object. This function simply a shortcut to subscribe and create a React hook.
@@ -149,12 +150,21 @@ a `Reactive` object. This function simply a shortcut to subscribe and create a R
 **Example**
 
 ```tsx
-import { OBJECT_MUTATIONS, subscribe } from '@beerush/reactor-react';
+import { Reactive, subscribe } from '@beerush/reactor-react';
+import React from 'react';
 
+// Component that re-renders when new value is assigned to property.
 export const TodoItem: React.FC<{ todo: Reactive<Todo> }> = ({ todo }) => {
-  subscribe(todo, OBJECT_MUTATIONS);
+  subscribe(todo, [ 'set' ]);
 
   return (<>...</>);
+};
+
+// Component that re-renders only when the "name" property changed.
+export const TodoItemName: React.FC<{ todo: Reactive<Todo> }> = ({ todo }) => {
+  subscribe(todo, [ 'set' ], [ 'name' ]);
+
+  return (<>{ todo.name }</>);
 };
 ```
 

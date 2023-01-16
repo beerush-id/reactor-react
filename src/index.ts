@@ -66,9 +66,13 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
 
 fetch.ref = load;
 
-export function subscribe<T extends ReactAble>(state: Reactive<T>, events?: Action[]) {
+export function subscribe<T extends ReactAble>(
+  state: Reactive<T>,
+  actions?: Action[],
+  props?: Array<keyof T> | string[]
+) {
   if ('subscribe' in state) {
-    return createHook(state, events);
+    return createHook(state, actions, props as string[]);
   } else {
     throw new Error('State must be a Reactive Object/Array!');
   }
@@ -119,7 +123,8 @@ export function resistant<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive?: boolean,
-  listen?: Action[]
+  actions?: Action[],
+  props?: Array<keyof T> | string[]
 ): R extends true
    ? Reactivities<T>
    : Reactive<T> {
@@ -131,7 +136,7 @@ export function resistant<T extends ReactAble, R extends boolean = true>(
     reactStore[name] = react(object, recursive) as never;
   }
 
-  return createHook(readable(name, object, recursive), listen);
+  return createHook(readable(name, object, recursive), actions, props as string[]);
 }
 
 export function writable<T extends ReactAble, R extends boolean = true>(
@@ -158,7 +163,8 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
   name: string,
   object: T,
   recursive = true,
-  listen?: Action[]
+  actions?: Action[],
+  props?: Array<keyof T> | string[]
 ): R extends true
    ? Reactivities<T>
    : Reactive<T> {
@@ -166,16 +172,16 @@ export function persistent<T extends ReactAble, R extends boolean = true>(
     return reactive(object, recursive) as never;
   }
 
-  return createHook(writable(name, object, recursive), listen);
+  return createHook(writable(name, object, recursive), actions, props as string[]);
 }
 
-function createHook<T>(object: Reactive<T>, actions?: Action[]): Reactivities<T> {
+function createHook<T>(object: Reactive<T>, actions?: Action[], props?: string[]): Reactivities<T> {
   const [ , setState ] = useState(object);
 
   useEffect(() => {
     return object.subscribe(() => {
       setState(Array.isArray(object) ? [ ...object ] : { ...object as any });
-    }, false, actions);
+    }, false, actions, props);
   });
 
   return object as Reactivities<T>;
