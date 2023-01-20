@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+- Fix missing `watch()` typings.
+
 ## v0.7.0
 
 - Fix `reactive()` that always re-create a reactive object during re-render.
@@ -20,7 +24,6 @@
 - Added `watch()` function to record the changed properties of an object/array.
 - When calling `fetch()` or `prefetch()` but the `url` is an empty string, it'll automatically use
   the `location.pathname` and `location.search` to prevent accessing to a wrong cache.
-
 
 ## v0.6.0
 

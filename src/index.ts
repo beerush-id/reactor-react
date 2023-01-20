@@ -3,6 +3,7 @@ import {
   ARRAY_MUTATIONS,
   fetch as load,
   forget,
+  History,
   OBJECT_MUTATIONS,
   PersistentStore,
   prefetch as preload,
@@ -25,7 +26,7 @@ import { useEffect, useRef, useState } from 'react';
 const reactStore = ReactiveStore;
 const persistStore = PersistentStore;
 
-export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[]) {
+export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[]): Reactivities<History<T>> {
   const history = useRef<any>(null);
 
   if (!history.current) {
@@ -235,6 +236,7 @@ export {
   ARRAY_MUTATIONS,
   OBJECT_MUTATIONS,
   Action,
+  History,
   Reactive,
   Reactivities,
   ReactAble,
