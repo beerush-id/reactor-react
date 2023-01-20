@@ -119,6 +119,34 @@ export function subscribe<T extends ReactAble>(
   }
 }
 
+subscribe.for = function <T extends ReactAble>(
+  actions: Action[],
+  props: Array<keyof T> | string[],
+  state: Reactive<T>
+) {
+  if ('subscribe' in state) {
+    return createHook(state, actions, props as string[]);
+  } else {
+    throw new Error('State must be a Reactive Object/Array!');
+  }
+};
+
+subscribe.props = function <T extends ReactAble>(props: Array<keyof T> | string[], state: Reactive<T>) {
+  if ('subscribe' in state) {
+    return createHook(state, undefined, props as string[]);
+  } else {
+    throw new Error('State must be a Reactive Object/Array!');
+  }
+};
+
+subscribe.actions = function <T extends ReactAble>(actions: Action[], state: Reactive<T>) {
+  if ('subscribe' in state) {
+    return createHook(state, actions);
+  } else {
+    throw new Error('State must be a Reactive Object/Array!');
+  }
+};
+
 export function reactive<T extends ReactAble, R extends boolean = false>(
   object: T,
   recursive?: boolean,
