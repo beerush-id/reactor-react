@@ -1,13 +1,13 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@beerush/reactor': ^0.9.0
+  '@beerush/reactor': ^0.9.1
   '@types/react': ^18.0.26
   rimraf: ^3.0.2
   typescript: ^4.9.4
 
 dependencies:
-  '@beerush/reactor': 0.9.0
+  '@beerush/reactor': 0.9.1
 
 devDependencies:
   '@types/react': 18.0.26
@@ -16,8 +16,8 @@ devDependencies:
 
 packages:
 
-  /@beerush/reactor/0.9.0:
-    resolution: {integrity: sha512-VWSL/sOrJupZ6MYslvzjsy2+HQXzU9oVDsaMP3fKQXqq3zRUzVyn1wiqjvFLUFKGgxFItNaWZJCGoDlLnE/CHw==}
+  /@beerush/reactor/0.9.1:
+    resolution: {integrity: sha512-WId09kTp/aSHP9cZ8YEA5TsJeFdNI28xmWezEw3/8oLWmXumd0V6gflIUHxnxPu2ewkIF8XGGX0pvMqQlE4tzw==}
     dev: false
 
   /@types/prop-types/15.7.5:

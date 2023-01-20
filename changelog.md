@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.2
+
+- Add `setBaseURL()` to set the `fetch()` base url when no `url` given (or `url = ''`), so the request url will
+  become `BASE_URL/{location.pathname}{location.search}`.
+
 ## 0.7.1
 
 - Fix missing `watch()` typings.

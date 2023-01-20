@@ -15,6 +15,7 @@ import {
   ReactiveResponse,
   ReactiveStore,
   type Reactivities,
+  setBaseURL,
   Subscribe,
   Subscriber,
   Unsubscribe,
@@ -250,7 +251,8 @@ export {
   purge,
   react as reactable,
   ReactiveRequest,
-  ReactiveResponse
+  ReactiveResponse,
+  setBaseURL,
 };
 
 export * from './writable';
