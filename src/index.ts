@@ -5,6 +5,7 @@ import {
   forget,
   OBJECT_MUTATIONS,
   PersistentStore,
+  prefetch as preload,
   purge,
   type ReactAble,
   type Reactive,
@@ -16,12 +17,31 @@ import {
   Subscribe,
   Subscriber,
   Unsubscribe,
-  upgrade
+  upgrade,
+  watch as monitor
 } from '@beerush/reactor';
 import { useEffect, useRef, useState } from 'react';
 
 const reactStore = ReactiveStore;
 const persistStore = PersistentStore;
+
+export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[]) {
+  const history = useRef<any>(null);
+
+  if (!history.current) {
+    history.current = monitor(state);
+  }
+
+  const [ , setState ] = useState(state);
+
+  useEffect(() => {
+    return history.current.subscribe(() => {
+      setState({ ...state });
+    }, false, undefined, props);
+  });
+
+  return history.current;
+}
 
 export function fetch<T extends ReactAble, R extends boolean = true>(
   url: string,
@@ -64,6 +84,25 @@ export function fetch<T extends ReactAble, R extends boolean = true>(
   return state;
 }
 
+export function prefetch<T extends ReactAble, R extends boolean = true>(
+  url: string,
+  init: T,
+  options?: Partial<ReactiveRequest>
+): ReactiveResponse<T> {
+  const state = preload(url, init, options);
+  const [ , setState ] = useState(state);
+
+  useEffect(() => {
+    return state.subscribe((o, prop) => {
+      if ([ '__status', '__finishedAt' ].includes(prop as never)) {
+        setState(Array.isArray(state) ? [ ...state ] : { ...state as any });
+      }
+    }, false);
+  });
+
+  return state;
+}
+
 fetch.ref = load;
 
 export function subscribe<T extends ReactAble>(
@@ -88,16 +127,21 @@ export function reactive<T extends ReactAble, R extends boolean = false>(
   if ('subscribe' in object) {
     return createHook(object as Reactive<T>, listen);
   } else {
-    const [ state, setState ] = useState<Reactive<T>>(object as never);
-    const reacted = react(state, recursive);
+    const state = useRef<Reactivities<T>>(null as never);
+
+    if (!state.current) {
+      state.current = react<T, true>(object, recursive);
+    }
+
+    const [ , setState ] = useState<Reactive<T>>(state.current as never);
 
     useEffect(() => {
-      return reacted.subscribe(() => {
-        setState(Array.isArray(state) ? [ ...state as never ] : { ...state } as any);
+      return state.current.subscribe(() => {
+        setState(Array.isArray(object) ? [ ...state.current as never ] : { ...state.current } as any);
       }, false, listen);
     });
 
-    return reacted as Reactivities<T>;
+    return state.current;
   }
 }
 

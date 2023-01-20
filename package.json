@@ -1,6 +1,6 @@
 {
   "name": "@beerush/reactor-react",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Reactive Object for React",
   "keywords": [
     "reactive",
@@ -54,6 +54,6 @@
     "react": "^18.2.0"
   },
   "dependencies": {
-    "@beerush/reactor": "^0.8.0"
+    "@beerush/reactor": "^0.9.0"
   }
 }

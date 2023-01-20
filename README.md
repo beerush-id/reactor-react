@@ -171,8 +171,9 @@ export const TodoItemName: React.FC<{ todo: Reactive<Todo> }> = ({ todo }) => {
 From the sample above, we're only subscribe from `OBJECT_MUTATIONS` actions. So the component will re-rendered only
 when `set` and `delete` property event occurs.
 
-> `subscribe()` function useful if you want to create a recursive reactive object at the top level component, and subscribe to it
-> at the child component level, so you don't have to re-create the reactive object but simply subscribe to it.
+> `subscribe()` function useful if you want to create a recursive reactive object at the top level component, and
+> subscribe to it at the child component level, so you don't have to re-create the reactive object but simply subscribe
+> to it.
 
 ## Global State
 
@@ -432,6 +433,7 @@ The returned object is a reactive object with additional properties:
 - `__response` - The response object.
 - `__finishedAt` - Date of when the request is finished.
 - `__refrehs()` - A function to manually refresh the data.
+- `__push()` - A function to do a write request.
 
 > Adding `cache: 'reload'` to the request options will refresh the data (re-request) while keep displaying the current
 > data, everytime the component is rendered for the first time (e.g, navigate out and navigate in).
@@ -473,6 +475,102 @@ export default () => {
 From the sample above, we're telling the `fetch()` function to always refresh the data everytime the component is
 rendered for the first time. When refreshing the data, the `<TodoList>` won't be removed because there is data to be
 displayed, and simply showing `Refreshing todos...` to tell user that we're updating the todo list from the API.
+
+### Prefetch
+
+**`prefetch(url: string, init: object | object[], options?: Request)`**
+
+Like `fetch()`, `prefetch()` also returns a reactive object. The difference is, `prefetch()` don't do the request, so
+you need to call the `__refresh()` or `__push()` function to do the request. The returned object has a success
+status (`__status: 200...`) without a response object.
+
+**Example**
+
+```tsx
+import { prefetch } from '@beerush/reactor-react';
+
+export const UserForm = () => {
+  const user = prefetch('/users', { name: '' });
+
+  return (
+    <form action="">
+      <input type="text" value={ user.name } onChange={ e => user.name = e.target.value }/>
+      <button disabled={ !user.__status }>{ user.__status ? 'Submit' : 'Submitting...' }</button>
+    </form>
+  );
+};
+```
+
+From the sample above, we're using `prefetch()` to create a user form state. The `<input>` element will update the
+initial data given to the `prefetch()` function, and the `<button>` will tells the form state to push the data (by doing
+a `__push()` request).
+
+The button also will be disabled while the form state is pushing the data because
+the `form.__status` will become `0` when there is an ongoing request.
+
+### Refresh
+
+**`.__refresh(options?: Request, update = true)`**
+
+The returned object from `fetch()` or `prefetch()` will have a `__refresh()` function to redo the request. The function
+can take two arguments, `options` to override the initial request options, and `update` (`true` by default) to tell the
+function to update the previous data or not.
+
+**Example**
+
+```ts
+import { fetch } from '@beerush/reactor-react';
+
+const state = fetch('/users/1', {});
+state.__refresh({
+  headers: {
+    Authorization: '...'
+  }
+});
+```
+
+**`.__push(options?: Request, update = true)`**
+
+The returned object from `fetch()` or `prefetch()` also will have a `__push()` function to do a write request from the
+current URL. If no options given or no `body` in the given request options, the function will send the initial data.
+
+The default method is `post`. To create a `put` or `patch` request, you can pass it to the request options, whether at
+the initial options or the overriding options.
+
+**Example**
+
+```ts
+import { prefetch } from '@beerush/reactor-react';
+
+const state = prefetch('/users/1', { name: 'John' }, { method: 'put' });
+state.name = 'John Smith';
+state.__push();
+
+```
+
+## History
+
+**`watch(state: Reactive): History`**
+
+A watch function can help us to record the changed properties of an object/array. This can be useful to only
+push the changed data to the API.
+
+> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
+> function doesn't use a periodical checking, so it won't cause any performance issue.
+
+**Example**
+
+```ts
+import { prefetch, reactive, watch } from '@beerush/reactor-react';
+
+const user = reactive({ name: 'John', age: 10 });
+const history = watch(user);
+const form = prefetch('/users/1', history.changes, { method: 'put' });
+
+user.name = 'John Smith';
+form.__push(); // PUT { name: 'John Smith' }
+
+```
 
 ## Optimization
 
