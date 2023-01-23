@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.0
+
+- Add `useFetch()` hook.
+- Add `usePrefetch()` hook.
+- Add `initFetch()` function.
+- Add `useLoader()` hook.
+
 ## v0.8.0
 
 - Add `subscribe.for(actions, props, state)` function.

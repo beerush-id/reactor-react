@@ -284,3 +284,4 @@ export {
 };
 
 export * from './writable';
+export * from './fetch-hooks';

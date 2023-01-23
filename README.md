@@ -15,8 +15,13 @@ a reactive state that trigger state change whenever the value is changed.
     - [Persistent](#persistent)
 - [Subscription](#subscription)
     - [Subscription Handler](#subscription-handler)
-- [Reactive Fetch](#reactive-fetch)
+- [Fetch Hooks](#hooks)
+    - [`useFetch()`](#usefetch)
+    - [`usePrefetch()`](#useprefetch)
+    - [`initFetch()`](#initfetch)
+    - [`useLoader()`](#useloader)
 - [Optimization](#optimization)
+- [Reactive Fetch](#reactive-fetch)
 
 > For a summary of the most recent changes, please
 > see [changelog.md](https://github.com/beerush-id/reactor-react/tree/main/changelog.md).
@@ -414,6 +419,180 @@ obj.subscribe((o, prop, value, action) => {
 
 ```
 
+## Hooks
+
+### useFetch
+
+**`useFetch(url: string, init: object | object[], options?: Request): FetchState;`**
+
+- `url` - Request URL.
+- `init` - Initial data to be used as a placeholder while the actual data is being fetched.
+- `options` - Fetch request options with additional `cachePeriod` to set the cache expiration time.
+
+Create a `fetch()` request that returns a shared `FetchState` and trigger state hook when the request completed.
+
+**Example**
+
+```jsx
+import { useFetch } from '@beerush/reactor-react';
+
+const Profile = () => {
+  const { data: profile , status, refresh } = useFetch('/api/users/1', {});
+  
+  return (
+    <>
+      <h3>{profile.name}</h3>
+      <button onClick={refresh}>{status ? 'Refresh' : 'Loading...'}</button>
+    </>
+  );
+};
+
+```
+
+### usePrefetch
+
+**`usePrefetch(url: string, init: object | object[], options?: Request): FetchState;`**
+
+- `url` - Request URL.
+- `init` - Initial data to be used as a placeholder while the actual data is being fetched.
+- `options` - Fetch request options with additional `cachePeriod` to set the cache expiration time.
+
+Create a shared `FetchState` object that trigger state hook when the data changed. Unlike `useFetch()`, this hook
+will not do `fetch()` by default. We need to manually call the `refresh()` method to do the request.
+
+**Example**
+
+```jsx
+import { usePrefetch } from '@beerush/reactor-react';
+
+const UserForm = () => {
+  const { data, status, push } = usePrefetch('/api/users', {});
+
+  return (
+    <>
+      <input type="text" value={data.name} onChange={e => data.name = e.target.value}/>
+      <button onClick={push} disabled={!status}>Submit</button>
+    </>
+  );
+};
+
+```
+
+### initFetch
+
+**`initFetch(url: string, init: object | object[], options?: Request): FetchState;`**
+
+- `url` - Request URL.
+- `init` - Initial data to be used as a placeholder while the actual data is being fetched.
+- `options` - Fetch request options with additional `cachePeriod` to set the cache expiration time.
+
+Create a shared `FetchState` without any state hook and don't do the `fetch()` by default. This function can be useful if we need to init
+state at the top level component that don't consume the state.
+
+**Example**
+
+```jsx
+import { initFetch } from '@beerush/reactor-react';
+
+const Layout = () => {
+  initFetch('/users/1', {});
+};
+
+```
+
+### useLoader
+
+**`useLoader(state: FetchState): FetchState;`**
+
+- `state` - A FetchState object as a reference to do `fetch()` and create a state hook.
+
+**Example**
+
+```jsx
+import { useLoader } from '@beerush/reactor-react';
+
+const Profile = ({ state }) => {
+  const { data: profile } = useLoader(state);
+  
+  return (
+    <>
+      <h3>{profile.name}</h3>
+    </>
+  );
+}
+```
+
+## Optimization
+
+While using reactive state is fun and easy, we also need to make sure that we use it at the right place. Let's take a
+look the sample below:
+
+**Not Recommended**
+
+```tsx
+
+// index.tsx
+import { resistant } from '@beerush/reactor-react';
+
+export default () => {
+  const dailyTodos = resistant('daily-todos', []);
+  const dailyTasks = resistant('daily-tasks', []);
+
+  return (
+    <>
+      <TodoList todos={ dailyTodos }/>
+      <TodoList todos={ dailyTasks }/>
+    </>
+  );
+}
+
+```
+
+**Recommended**
+
+```tsx
+
+// index.tsx
+import { readable } from '@beerush/reactor-react';
+import { TodoList } from './todo-list.tsx';
+
+const dailyTodos = readable('daily-todos', []);
+const dailyTasks = readable('daily-tasks', []);
+
+export default () => {
+  return (
+    <>
+      <TodoList todos={ dailyTodos }/>
+      <TodoList todos={ dailyTasks }/>
+    </>
+  );
+}
+```
+
+```tsx
+// todo-list.tsx
+import { ARRAY_MUTATIONS, subscribe } from '@beerush/reactor-react';
+
+export const TodoList = ({ todos }) => {
+  subscribe(todos, ARRAY_MUTATIONS);
+
+  return (<>...</>);
+};
+
+```
+
+From the samples above, the first sample is `not recommended` because the index component is not directly consuming the
+states, but it'll be re-rendered whenever the state inside `dailyTodos` or `dailyTasks` changed. It will cause both todo
+list re-rendered while actually it doesn't need to. For example, if we add new todo to the `dailyTodos`, todo list
+with `dailyTasks` will be re-rendered as well.
+
+The second sample is recommended because the only re-rendered component is the one that changed. For example, if we add
+new todo to the `dailyTodos`, only todo list with `dailyTodos` that re-rendered. Todo list with `dailyTasks` will not
+re-render because no changes in its state.
+
+We also put the `readable()` calls outside the component because we are accessing global states, so we don't need to
+re-create them. Putting the `readable()` calls inside a component will recall it everytime the component renders.
+
 ## Reactive Fetch
 
 Reactive Fetch will allow us to convert the native `fetch()` result into a reactive request.
@@ -571,74 +750,3 @@ user.name = 'John Smith';
 form.__push(); // PUT { name: 'John Smith' }
 
 ```
-
-## Optimization
-
-While using reactive state is fun and easy, we also need to make sure that we use it at the right place. Let's take a
-look the sample below:
-
-**Not Recommended**
-
-```tsx
-
-// index.tsx
-import { resistant } from '@beerush/reactor-react';
-
-export default () => {
-  const dailyTodos = resistant('daily-todos', []);
-  const dailyTasks = resistant('daily-tasks', []);
-
-  return (
-    <>
-      <TodoList todos={ dailyTodos }/>
-      <TodoList todos={ dailyTasks }/>
-    </>
-  );
-}
-
-```
-
-**Recommended**
-
-```tsx
-
-// index.tsx
-import { readable } from '@beerush/reactor-react';
-import { TodoList } from './todo-list.tsx';
-
-const dailyTodos = readable('daily-todos', []);
-const dailyTasks = readable('daily-tasks', []);
-
-export default () => {
-  return (
-    <>
-      <TodoList todos={ dailyTodos }/>
-      <TodoList todos={ dailyTasks }/>
-    </>
-  );
-}
-```
-
-```tsx
-// todo-list.tsx
-import { ARRAY_MUTATIONS, subscribe } from '@beerush/reactor-react';
-
-export const TodoList = ({ todos }) => {
-  subscribe(todos, ARRAY_MUTATIONS);
-
-  return (<>...</>);
-};
-
-```
-
-From the samples above, the first sample is `not recommended` because the index component is not directly consuming the
-states, but it'll be re-rendered whenever the state inside `dailyTodos` or `dailyTasks` changed. It will cause both todo
-list re-rendered while actually it doesn't need to. For example, if we add new todo to the `dailyTodos`, todo list
-with `dailyTasks` will be re-rendered as well.
-
-The second sample is recommended because the only re-rendered component is the one that changed. For example, if we add
-new todo to the `dailyTodos`, only todo list with `dailyTodos` that re-rendered. Todo list with `dailyTasks` will not
-re-render because no changes in its state.
-
-We also put the `readable()` calls outside the component because we are accessing global states, so we don't need to
-re-create them. Putting the `readable()` calls inside a component will recall it everytime the component renders. 
