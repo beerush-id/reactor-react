@@ -1,4 +1,5 @@
 import { type ReactAble, type Reactive, type ReactiveRequest, type Reactivities, resistant } from '@beerush/reactor';
+import { replace, replaceItems } from '@beerush/utils';
 import { useEffect, useRef, useState } from 'react';
 
 export type FetchProps<T> = {
@@ -103,7 +104,7 @@ export function initFetch<T extends ReactAble, R extends boolean = true>(
   const optKeys = Object.keys(options)
     .filter(k => ![ 'cache', 'cachePeriod', 'recursive' ].includes(k))
     .map(k => `[${ k }:${ JSON.stringify(options[k as never]) }]`);
-  const key = `fetch:${url}${optKeys.join('')}`;
+  const key = `fetch:${ url }${ optKeys.join('') }`;
   const state: FetchState<T, false> = resistant<T, R>(
     key,
     { data: init } as never,
@@ -141,19 +142,9 @@ export function initFetch<T extends ReactAble, R extends boolean = true>(
 
                   if (JSON.stringify(data) !== JSON.stringify(state.data)) {
                     if (Array.isArray(data) && Array.isArray(state.data)) {
-                      (state.data as unknown[]).splice(0, (state.data as unknown[]).length, ...data);
+                      replaceItems(state.data, data);
                     } else {
-                      for (const [ key, value ] of Object.entries(data)) {
-                        if (state.data[key as never] !== value) {
-                          state.data[key as never] = value as never;
-                        }
-                      }
-
-                      Object.keys(state.data).forEach(key => {
-                        if (!data.hasOwnProperty(key)) {
-                          delete state.data[key as never];
-                        }
-                      });
+                      replace(state.data, data);
                     }
                   }
                 } catch (error) {

@@ -437,8 +437,8 @@ Create a `fetch()` request that returns a shared `FetchState` and trigger state 
 import { useFetch } from '@beerush/reactor-react';
 
 const Profile = () => {
-  const { data: profile , status, refresh } = useFetch('/api/users/1', {});
-  
+  const { data: profile, status, refresh } = useFetch('/api/users/1', {});
+
   return (
     <>
       <h3>{profile.name}</h3>
@@ -486,8 +486,8 @@ const UserForm = () => {
 - `init` - Initial data to be used as a placeholder while the actual data is being fetched.
 - `options` - Fetch request options with additional `cachePeriod` to set the cache expiration time.
 
-Create a shared `FetchState` without any state hook and don't do the `fetch()` by default. This function can be useful if we need to init
-state at the top level component that don't consume the state.
+Create a shared `FetchState` without any state hook and don't do the `fetch()` by default. This function can be useful
+if we need to init state at the top level component that don't consume the state.
 
 **Example**
 
@@ -513,7 +513,7 @@ import { useLoader } from '@beerush/reactor-react';
 
 const Profile = ({ state }) => {
   const { data: profile } = useLoader(state);
-  
+
   return (
     <>
       <h3>{profile.name}</h3>
@@ -727,15 +727,15 @@ state.__push();
 
 ```
 
-## History
+## Watch
 
-**`watch(state: Reactive): History`**
+**`watch(state: Reactive, debounce?: number): History`**
+
+- `state` - A reactive object to watch.
+- `debounce` - A timeout to cancel the previous change and apply new change.
 
 A watch function can help us to record the changed properties of an object/array. This can be useful to only
 push the changed data to the API.
-
-> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
-> function doesn't use a periodical checking, so it won't cause any performance issue.
 
 **Example**
 
@@ -750,3 +750,25 @@ user.name = 'John Smith';
 form.__push(); // PUT { name: 'John Smith' }
 
 ```
+
+> Watch function simply subscribe to the reactive object and then store the changed property and its value. This
+> function doesn't use a periodical checking, so it won't cause any performance issue.
+
+> Watch function is using `debouce` time to prevent storing unnecessary history of a fast changed properties. For
+> example, if you type fast, the changes will be recorded after you stop typing. The default debounce time is `500ms`.
+>
+> To change the global/default debounce time, you can call `watch.debounce(duration: number)`.
+
+### History
+
+**History** is the returned object when you call `watch()`. History will have the following properties:
+
+- `.changes` - An object of the changed properties.
+- `.changed` - A boolean that mark does the state is changed or not.
+- `.canUndo` - A boolean that mark does the history has changes to undo.
+- `.canRedo` - A boolean that mark does the history has changes to redo.
+- `.undo()` - A function to undo the changes, one by one.
+- `.redo()` - A function to redo the changes, one by one.
+- `.reset()` - A function to reset to the initial state by undoing the changes.
+- `.clear()` - A function to clear the changes, mark it as unchanged.
+- `.forget()` - A function to stop watching the changes.

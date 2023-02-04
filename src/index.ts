@@ -27,7 +27,7 @@ import { useEffect, useRef, useState } from 'react';
 const reactStore = ReactiveStore;
 const persistStore = PersistentStore;
 
-export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[]): Reactivities<History<T>> {
+export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[]): Reactive<History<T>> {
   const history = useRef<any>(null);
 
   if (!history.current) {
@@ -44,6 +44,8 @@ export function watch<T extends ReactAble>(state: Reactive<T>, props?: string[])
 
   return history.current;
 }
+
+watch.debounce = monitor.debounce;
 
 export function fetch<T extends ReactAble, R extends boolean = true>(
   url: string,
