@@ -1,6 +1,6 @@
 {
   "name": "@beerush/reactor-react",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Reactive Object for React",
   "keywords": [
     "reactive",
@@ -19,7 +19,7 @@
     ".": {
       "types": "./lib/esm/index.d.ts",
       "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.cjs"
+      "require": "./lib/cjs/index.js"
     }
   },
   "directories": {
@@ -54,7 +54,7 @@
     "react": "^18.2.0"
   },
   "dependencies": {
-    "@beerush/reactor": "^0.10.2",
+    "@beerush/reactor": "^0.10.3",
     "@beerush/utils": "^0.0.3"
   }
 }
